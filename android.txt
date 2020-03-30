@@ -1,11 +1,8 @@
-package com.example.demo.main.excel;
+package com.xgs.springcloudserviceadmin.controller;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Proxy;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -85,18 +82,17 @@ public class TestMain {
 //        headerValue = "Basic " + Base64.encode("CHINA\\xwx866230:xu19950723.".getBytes());
 
         //设置代理服务器
-        HttpClientBuilder custom = HttpClients.custom();
-        HttpHost proxy = new HttpHost("proxy.huawei.com", 8080);
-        DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxy);
-        custom.setRoutePlanner(routePlanner);
-
-        //设置代理认证
-        CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-        credentialsProvider.setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), new UsernamePasswordCredentials("CHINA\\xwx866230", "xu19950723."));
-        custom.setDefaultCredentialsProvider(credentialsProvider);
-        httpClient = custom.build();
+//        HttpClientBuilder custom = HttpClients.custom();
+//        HttpHost proxy = new HttpHost("proxy.huawei.com", 8080);
+//        DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxy);
+//        custom.setRoutePlanner(routePlanner);
+//
+//        //设置代理认证
+//        CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+//        credentialsProvider.setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), new UsernamePasswordCredentials("CHINA\\xwx866230", "xu19950723."));
+//        custom.setDefaultCredentialsProvider(credentialsProvider);
+        httpClient = HttpClientBuilder.create().build();
     }
-
 
 
     public static void main(String[] args) {
@@ -105,7 +101,7 @@ public class TestMain {
 
 
     static void excelTest() {
-        String filePath = "D:/test/工作簿1.xlsx";
+        String filePath = "D:/workFile/工作簿1.xlsx";
         // 延迟解析比率
         ZipSecureFile.setMinInflateRatio(-0.1d);
         File file = new File(filePath);
@@ -133,20 +129,20 @@ public class TestMain {
             Cell cell = row.getCell(0);
             //得到单元格样式
 //            System.out.println("行数：" + rowLength + ",列数：" + colLength);
-            for (int i = 1; i < 3350; i++) {//5562
+            for (int i = 17; i < 1000; i++) {//1348
                 System.out.println("行数：" + i + ",列数：" + colLength);
                 row = sheet.getRow(i);
-                if (row == null ) {
+                if (row == null) {
                     continue;
                 }
                 String currentVersion = null;
                 try {
                     currentVersion = row.getCell(1).getStringCellValue();
-                }catch (Exception e){
+                } catch (Exception e) {
                     System.out.println(e.getMessage());
                     currentVersion = " ";
                 }
-                Map<String, String> info = getInfo(row.getCell(0).getStringCellValue(),currentVersion);
+                Map<String, String> info = getInfo(row.getCell(0).getStringCellValue(), currentVersion);
                 cell = row.createCell(HOMEPAGE, CellType.STRING);
                 cell.setCellValue(info.get("homepage"));
 //                    System.out.println("homepage:"+info.get("homepage"));
@@ -158,40 +154,56 @@ public class TestMain {
                 cell.setCellValue(info.get("license"));
 
 
-
-                String repositoryUrl = null;
-                if (!StringUtils.isEmpty(info.get("repository"))) {
+//                String repositoryUrl = null;
+                if (!StringUtils.isEmpty(info.get("gitHub"))) {
                     String license = info.get("license");
 
                     cell = row.createCell(LICENSE, CellType.STRING);
-                    if ("ISC".equals(license)){
-                        cell.setCellValue(info.get("repository")+"/blob/master/LICENSE.txt");
-                    }else if("MIT".equals(license)){
-                        cell.setCellValue(info.get("repository")+"/master/LICENSE");
-                    }else if("BSD".equals(license)){
-                        cell.setCellValue(info.get("repository")+"/blob/master/LICENSE");
-                    }else{
-                        cell.setCellValue(info.get("repository")+"/master/LICENSE");
+                    if ("ISC".equals(license)) {
+                        cell.setCellValue(info.get("gitHub") + "/blob/master/LICENSE.txt");
+                    } else if ("MIT".equals(license)) {
+                        cell.setCellValue(info.get("gitHub") + "/master/LICENSE");
+                    } else if ("BSD".equals(license)) {
+                        cell.setCellValue(info.get("gitHub") + "/blob/master/LICENSE");
+                    } else {
+                        cell.setCellValue(info.get("gitHub") + "/master/LICENSE");
                         cell.setCellStyle(style);
                     }
 
 
-                    cell = row.createCell(REPOSITORY, CellType.STRING);
-                    try {
-                        String repository = info.get("repository")+"/archive/v" + row.getCell(1).getStringCellValue() + ".zip";
-                        //到 URL 所引用的远程对象的连接
-//                        HttpGet httpGet = new HttpGet(repository);
-//                        CloseableHttpResponse execute = httpClient.execute(httpGet);
-//                        int statusCode = execute.getStatusLine().getStatusCode();
-//                        //HTTPS协议
+//                    try {
+//                        String repository = info.get("repository") + "/archive/v" + row.getCell(1).getStringCellValue() + ".zip";
+//                        //到 URL 所引用的远程对象的连接
+//                        URL url = new URL(repository);
+//                        url.openStream();
 //                        //从 HTTP 响应消息获取状态码
-                        cell.setCellValue(repository);
-                    }catch (Exception e){
-//                        System.out.println("repository:"+info.get("repository"));
-                        cell.setCellValue(info.get("repository"));
-                        cell.setCellStyle(style);
-                    }
+//                        cell.setCellValue(repository);
+//                    } catch (Exception e) {
+////                        System.out.println("repository:"+info.get("repository"));
+//                        cell.setCellValue(info.get("repository"));
+//                        cell.setCellStyle(style);
+//
+//                    }
                 }
+
+
+//                try {
+//                    String repository = info.get("repository") + "/archive/v" + row.getCell(1).getStringCellValue() + ".zip";
+//                    //到 URL 所引用的远程对象的连接
+////                        HttpGet httpGet = new HttpGet(repository);
+////                        CloseableHttpResponse execute = httpClient.execute(httpGet);
+////                        int statusCode = execute.getStatusLine().getStatusCode();
+////                        //HTTPS协议
+////                        //从 HTTP 响应消息获取状态码
+//                    cell.setCellValue(repository);
+//                } catch (Exception e) {
+////                        System.out.println("repository:"+info.get("repository"));
+//                    cell.setCellValue(info.get("repository"));
+//                    cell.setCellStyle(style);
+//                }
+
+                cell = row.createCell(REPOSITORY, CellType.STRING);
+                cell.setCellValue(info.get("repository"));
 
                 cell = row.createCell(BUGS_URL, CellType.STRING);
                 cell.setCellValue(info.get("bugs"));
@@ -206,29 +218,39 @@ public class TestMain {
 //                    System.out.println("new_date:"+info.get("new_date"));
             }
 
-            //将修改好的数据保存
+//            //将修改好的数据保存
             out = new FileOutputStream(file);
             workbook.write(out);
             out.close();
 
-        } catch (ClientProtocolException e) {
+        } catch (
+                ClientProtocolException e) {
             e.printStackTrace();
-        } catch (ParseException e) {
+        } catch (
+                ParseException e) {
             e.printStackTrace();
-        } catch (IOException e) {
+        } catch (
+                IOException e) {
             e.printStackTrace();
-        } catch (JSONException e) {
+        } catch (
+                JSONException e) {
             e.printStackTrace();
-        } finally {
-            try {
-                if (workbook != null){
-                    //将修改好的数据保存
+        } catch (Exception e){
+            if (workbook != null) {
+//                    //将修改好的数据保存
+                try {
                     out = new FileOutputStream(file);
                     workbook.write(out);
+                } catch (FileNotFoundException ex) {
+                    ex.printStackTrace();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }finally {
+            try {
+                if (out != null) {
                     out.close();
-                    if (out != null){
-                        out.close();
-                    }
                 }
                 // 释放资源
                 if (httpClient != null) {
@@ -238,12 +260,13 @@ public class TestMain {
                 e.printStackTrace();
             }
         }
+
     }
 
 
-    static Map<String, String> getInfo(String name,String currentVersion) {
+    static Map<String, String> getInfo(String name, String currentVersion) {
         String url = "https://www.npmjs.com/search?q=" + name;
-        HashMap<String, String> mapInfo = new HashMap<>();
+        Map<String, String> mapInfo = new HashMap<>();
         // 获得Http客户端(可以理解为:你得先有一个浏览器;注意:实际上HttpClient与浏览器是不一样的)
         // 创建Get请求
         HttpGet httpGet = new HttpGet(url);
@@ -251,6 +274,8 @@ public class TestMain {
         // 响应模型
         CloseableHttpResponse responseArray = null;
         CloseableHttpResponse responseInfo = null;
+        String substring = null;
+        JSONObject jsonObject = null;
         try {
 
             // 由客户端执行(发送)Get请求
@@ -259,8 +284,8 @@ public class TestMain {
             HttpEntity responseEntity = responseArray.getEntity();
 //            System.out.println("响应状态为:" + response.getStatusLine());
             if (responseEntity != null) {
-                String substring = getContext(responseEntity);
-                JSONObject jsonObject = JSON.parseObject(substring);
+                substring = getContext(responseEntity);
+                jsonObject = JSON.parseObject(substring);
                 JSONObject context = jsonObject.getJSONObject("context");
                 JSONArray objects = context.getJSONArray("objects");
                 if (objects == null) {
@@ -271,16 +296,10 @@ public class TestMain {
                     JSONObject aPackage = object.getJSONObject("package");
                     if (name.equals(aPackage.getString("name"))) {
                         JSONObject links = aPackage.getJSONObject("links");
-                        mapInfo.put("repository", links.getString("repository"));
+                        mapInfo.put("gitHub", links.getString("repository"));
                         mapInfo.put("homepage", links.getString("homepage"));
                         mapInfo.put("new_version", aPackage.getString("version"));
                         mapInfo.put("bugs", links.getString("bugs"));
-                        JSONObject date = aPackage.getJSONObject("date");
-                        if (date != null) {
-                            String ts = date.getString("ts");
-                            ts = getDateString(ts);
-                            mapInfo.put("new_date", ts);
-                        }
 
                         // 获取npmjs的详情URL
                         String npm = links.getString("npm");
@@ -292,29 +311,12 @@ public class TestMain {
                         // 从响应模型中获取响应实体
                         HttpEntity responseInfoEntity = responseInfo.getEntity();
                         substring = getContext(responseInfoEntity);
-                        if (!StringUtils.isEmpty(substring)){
+                        if (!StringUtils.isEmpty(substring)) {
                             JSONObject jsonObjectInfo = JSON.parseObject(substring);
                             JSONObject contextInfo = jsonObjectInfo.getJSONObject("context");
                             JSONObject packument = contextInfo.getJSONObject("packument");
                             mapInfo.put("license", packument.getString("license"));
-
-                            // 获取当前版本
-                            JSONArray versions = packument.getJSONArray("versions");
-                            if (versions == null){
-                                return mapInfo;
-                            }
-                            for (int j = 0; j < versions.size(); j++) {
-                                JSONObject versionsJSONObject = versions.getJSONObject(j);
-                                String version = versionsJSONObject.getString("version");
-                                if (currentVersion.equals(version)){
-                                    JSONObject dateJsonObject = versionsJSONObject.getJSONObject("date");
-                                    if (dateJsonObject != null){
-                                        String dateStr = getDateString(dateJsonObject.getString("ts"));
-                                        mapInfo.put("old_date", dateStr);
-                                    }
-                                    break;
-                                }
-                            }
+                            mapInfo = getPackumentMap(currentVersion, mapInfo, aPackage, packument);
                         }
                         break;
                     }
@@ -328,6 +330,24 @@ public class TestMain {
             e.printStackTrace();
         } catch (JSONException e) {
             e.printStackTrace();
+        } catch (NullPointerException e) {
+            JSONObject packument = jsonObject.getJSONObject("packument");
+            if (packument == null) {
+                return mapInfo;
+            }
+            mapInfo.put("new_version", packument.getString("version"));
+            mapInfo.put("license", packument.getString("license"));
+            mapInfo.put("gitHub", packument.getString("repository"));
+            mapInfo.put("homepage", packument.getString("homepage"));
+
+            JSONObject date = packument.getJSONObject("date");
+            if (date != null) {
+                String ts = date.getString("ts");
+                ts = getDateString(ts);
+                mapInfo.put("new_date", ts);
+            }
+            mapInfo = getPackumentMap(currentVersion, mapInfo, packument, packument);
+
         } finally {
             try {
                 if (responseArray != null) {
@@ -338,10 +358,48 @@ public class TestMain {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+            } finally {
+                return mapInfo;
+            }
+        }
+
+
+    }
+
+    private static Map<String, String> getPackumentMap(String currentVersion, Map<String, String> mapInfo, JSONObject aPackage, JSONObject packument) {
+        // 获取当前版本
+        JSONArray versions = packument.getJSONArray("versions");
+        if (versions == null) {
+            return mapInfo;
+        }
+        for (int j = 0; j < versions.size(); j++) {
+            JSONObject versionsJSONObject = versions.getJSONObject(j);
+            String version = versionsJSONObject.getString("version");
+            if (aPackage.getString("version").equals(version)) {
+                JSONObject date = versionsJSONObject.getJSONObject("date");
+                if (date != null) {
+                    String ts = date.getString("ts");
+                    ts = getDateString(ts);
+                    mapInfo.put("new_date", ts);
+                }
+                mapInfo.put("new_version", versionsJSONObject.getString("version"));
+
+            }
+
+            if (currentVersion.equals(version) || ("latest".equals(currentVersion) &&aPackage.getString("version").equals(version))) {
+                JSONObject dateJsonObject = versionsJSONObject.getJSONObject("date");
+                if (dateJsonObject != null) {
+                    String dateStr = getDateString(dateJsonObject.getString("ts"));
+                    mapInfo.put("old_date", dateStr);
+                }
+                JSONObject dist = versionsJSONObject.getJSONObject("dist");
+                if (dist != null) {
+                    mapInfo.put("repository", dist.getString("tarball"));
+                }
+                break;
             }
         }
         return mapInfo;
-
     }
 
     private static String getDateString(String ts) {
@@ -367,3 +425,4 @@ public class TestMain {
 
 
 }
+
